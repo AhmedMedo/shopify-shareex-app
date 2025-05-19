@@ -217,7 +217,7 @@ class FulfillmentsCreateJob implements ShouldQueue
             $serial = $decoded[0]['serial'] ?? null;
 
             $logData["status"] = "success";
-            $logData["mubasher_serial_number"] = $serial;
+            $logData["shareex_serial_number"] = $serial;
 
 //            // Update order with tracking info if available
 //            if ($serial) {
