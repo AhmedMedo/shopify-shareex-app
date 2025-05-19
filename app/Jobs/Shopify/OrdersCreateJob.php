@@ -33,6 +33,9 @@ class OrdersCreateJob implements ShouldQueue
     public function handle(): void
     {
         try {
+            Log::info("OrdersCreateJob: Handling webhook for shop {$this->shopDomain->toNative()} and order ID {$this->data->id}",[
+                'data' => (array) $this->data
+            ]);
             // Find the shop/user
             $shop = User::where('name', $this->shopDomain->toNative())
                 ->orWhere('email', 'like', '%@'.$this->shopDomain->toNative())
