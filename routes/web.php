@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Shopify\Settings\ShareexCredentials;
 use App\Livewire\Shopify\Settings\AreaMappings;
@@ -21,15 +22,19 @@ use Osiset\ShopifyApp\Services\ApiHelper;
 */
 
 Route::get('test', function () {
+    $shop = \App\Models\User::latest()->first();
+    $orderId  = '5973232648294';
+    $response = Http::withHeaders([
+        'X-Shopify-Access-Token' => $shop->password,
+    ])->get("https://{$shop->name}/admin/api/2025-04/orders/{$orderId}.json");
+    dd($response->json());
+    $shop = \App\Models\User::first();
+    $orderId  = '6468709941561';
+    $response = Http::withHeaders([
+        'X-Shopify-Access-Token' => $shop->password,
+    ])->get("https://{$shop->name}/admin/api/2025-04/orders/{$orderId}.json");
 
-    $shop = app()->make(IShopQuery::class)->getByDomain(new \Osiset\ShopifyApp\Objects\Values\ShopDomain('shareex-dev.myshopify.com'));
-    if (!$shop) {
-        return response('Shop not found.', 404);
-    }
-    $apiHelper = $shop->apiHelper();
-    // Get the webhooks existing in for the shop
-    $webhooks = $apiHelper->getWebhooks();
-
+    dd($response->json());
     // Step 1: List all webhooks (GraphQL)
 
 });

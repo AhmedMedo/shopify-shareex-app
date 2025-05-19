@@ -18,6 +18,7 @@ class ShareexApiService
 
     public function __construct(?ShopifyStore $shop = null)
     {
+        Log::debug('ShareexApiService: credentials loaded', ["shop" => $shop]);
         $this->shop = $shop ?: Auth::user();
         $this->loadCredentials();
     }
@@ -34,16 +35,17 @@ class ShareexApiService
         }
 
         $credentials = ShareexCredential::where("shop_id", $this->shop->id)->first();
-
+        Log::debug('ShareexApiService: credentials loaded', ["credentials" => $credentials]);
         if ($credentials && $credentials->base_url && $credentials->api_username && $credentials->api_password) {
             $this->apiUrl = $credentials->base_url;
             $this->username = $credentials->api_username;
-            try {
-                $this->password = Crypt::decryptString($credentials->api_password);
-            } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
-                Log::error("ShareexApiService: Failed to decrypt password for shop" . $this->shop->id, ["error" => $e->getMessage()]);
-                $this->password = ""; // Set to empty if decryption fails
-            }
+            $this->password = $credentials->api_password;
+//            try {
+//                $this->password = Crypt::decryptString($credentials->api_password);
+//            } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+//                Log::error("ShareexApiService: Failed to decrypt password for shop" . $this->shop->id, ["error" => $e->getMessage()]);
+//                $this->password = ""; // Set to empty if decryption fails
+//            }
         } else {
             Log::warning("ShareexApiService: Credentials not fully configured for shop" . $this->shop->id);
             $this->apiUrl = "";
@@ -65,19 +67,26 @@ class ShareexApiService
             return null;
         }
 
-        $fullUrl = rtrim($this->apiUrl, "/") . "/" . ltrim($endpoint, "/");
+        $fullUrl = rtrim($this->apiUrl, "/") . "/api/shipments.asmx/" . ltrim($endpoint, "/");
 
         $requestData = array_merge($params, [
             "uname" => $this->username,
             "upass" => $this->password,
         ]);
 
+        Log::debug('SENDING_REQUEST',[
+            "url" => $fullUrl,
+            "data" => $requestData
+        ]);
+
         try {
             if ($method === "POST") {
-                $response = Http::asForm()->post($fullUrl, $requestData);
+                $response = Http::acceptJson()->post($fullUrl, $requestData);
             } else { // Default to GET
                 $response = Http::get($fullUrl, $requestData);
             }
+
+             Log::debug("Shareex API Request Response", ["response" => $response->json(),'r' => $response->body()]);
 
             if ($response->failed()) {
                 Log::error("Shareex API Request Failed", [
@@ -90,11 +99,7 @@ class ShareexApiService
                 return null;
             }
 
-            $decodedResponse = $response->json();
-            if ($decodedResponse === null && $response->successful()) {
-                return ["raw_response" => $response->body()];
-            }
-            return $decodedResponse;
+            return $response->json();
 
         } catch (\Exception $e) {
             Log::error("Shareex API Request Exception", [
@@ -109,16 +114,16 @@ class ShareexApiService
 
     public function sendShipment(array $shipmentData): ?array
     {
-        return $this->makeRequest("SendShipment.php", $shipmentData, "POST");
+        return $this->makeRequest("SendShipment", $shipmentData, "POST");
     }
 
     public function getShipmentLastStatus(string $serialNumber): ?array
     {
-        return $this->makeRequest("GetShipmentLastStatus.php", ["serial" => $serialNumber], "GET");
+        return $this->makeRequest("GetShipmentLastStatus", ["serial" => $serialNumber], "GET");
     }
 
     public function getShipmentHistory(string $serialNumber): ?array
     {
-        return $this->makeRequest("GetShipmentHistory.php", ["serial" => $serialNumber], "GET");
+        return $this->makeRequest("GetShipmentHistory", ["serial" => $serialNumber], "GET");
     }
 }

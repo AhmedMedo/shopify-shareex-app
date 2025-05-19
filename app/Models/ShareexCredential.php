@@ -35,67 +35,67 @@ class ShareexCredential extends Model
     ];
 
     // Mutator for base_url
-    public function setBaseUrlAttribute($value)
-    {
-        try {
-            $this->attributes["base_url"] = Crypt::encryptString($value);
-        } catch (EncryptException $e) {
-            // Handle encryption failure, perhaps log it or throw a custom exception
-            $this->attributes["base_url"] = null; // Or some default/error state
-        }
-    }
-
-    // Accessor for base_url
-    public function getBaseUrlAttribute($value)
-    {
-        try {
-            return $value ? Crypt::decryptString($value) : null;
-        } catch (DecryptException $e) {
-            // Handle decryption failure
-            return null; // Or some default/error state
-        }
-    }
-
-    // Mutator for api_username
-    public function setApiUsernameAttribute($value)
-    {
-        try {
-            $this->attributes["api_username"] = Crypt::encryptString($value);
-        } catch (EncryptException $e) {
-            $this->attributes["api_username"] = null;
-        }
-    }
-
-    // Accessor for api_username
-    public function getApiUsernameAttribute($value)
-    {
-        try {
-            return $value ? Crypt::decryptString($value) : null;
-        } catch (DecryptException $e) {
-            return null;
-        }
-    }
-
-    // Mutator for api_password
-    public function setApiPasswordAttribute($value)
-    {
-        try {
-            $this->attributes["api_password"] = Crypt::encryptString($value);
-        } catch (EncryptException $e) {
-            $this->attributes["api_password"] = null;
-        }
-    }
-
-    // Accessor for api_password
-    public function getApiPasswordAttribute($value)
-    {
-        try {
-            return $value ? Crypt::decryptString($value) : null;
-        } catch (DecryptException $e) {
-            // Important: Do not return the encrypted string on failure. Return null or throw.
-            return null; 
-        }
-    }
+//    public function setBaseUrlAttribute($value)
+//    {
+//        try {
+//            $this->attributes["base_url"] = Crypt::encryptString($value);
+//        } catch (EncryptException $e) {
+//            // Handle encryption failure, perhaps log it or throw a custom exception
+//            $this->attributes["base_url"] = null; // Or some default/error state
+//        }
+//    }
+//
+//    // Accessor for base_url
+//    public function getBaseUrlAttribute($value)
+//    {
+//        try {
+//            return $value ? Crypt::decryptString($value) : null;
+//        } catch (DecryptException $e) {
+//            // Handle decryption failure
+//            return null; // Or some default/error state
+//        }
+//    }
+//
+//    // Mutator for api_username
+//    public function setApiUsernameAttribute($value)
+//    {
+//        try {
+//            $this->attributes["api_username"] = Crypt::encryptString($value);
+//        } catch (EncryptException $e) {
+//            $this->attributes["api_username"] = null;
+//        }
+//    }
+//
+//    // Accessor for api_username
+//    public function getApiUsernameAttribute($value)
+//    {
+//        try {
+//            return $value ? Crypt::decryptString($value) : null;
+//        } catch (DecryptException $e) {
+//            return null;
+//        }
+//    }
+//
+//    // Mutator for api_password
+//    public function setApiPasswordAttribute($value)
+//    {
+//        try {
+//            $this->attributes["api_password"] = Crypt::encryptString($value);
+//        } catch (EncryptException $e) {
+//            $this->attributes["api_password"] = null;
+//        }
+//    }
+//
+//    // Accessor for api_password
+//    public function getApiPasswordAttribute($value)
+//    {
+//        try {
+//            return $value ? Crypt::decryptString($value) : null;
+//        } catch (DecryptException $e) {
+//            // Important: Do not return the encrypted string on failure. Return null or throw.
+//            return null;
+//        }
+//    }
 
     /**
      * Get the shop that owns the Shareex credential.
@@ -103,7 +103,7 @@ class ShareexCredential extends Model
     public function shop()
     {
         // kyon147/laravel-shopify uses User model as Shop model
-        return $this->belongsTo(User::class, "shop_id"); 
+        return $this->belongsTo(User::class, "shop_id");
     }
 }
 

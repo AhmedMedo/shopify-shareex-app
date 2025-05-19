@@ -385,20 +385,30 @@ return [
     */
 
     'webhooks' => [
-        'orders_paid' => [
-            'topic' => 'ORDERS_PAID',
-            'class' => \App\Jobs\Shopify\OrdersPaidJob::class,
-            'address' => env('APP_URL') . '/webhook/orders-paid',
-        ],
+//        'orders_paid' => [
+//            'topic' => 'ORDERS_PAID',
+//            'class' => \App\Jobs\Shopify\OrdersPaidJob::class,
+//            'address' => env('APP_URL') . '/webhook/orders-paid',
+//        ],
         'app_uninstalled' => [
             'topic' => 'APP_UNINSTALLED',
             'class' => \App\Jobs\Shopify\AppUninstalledJob::class,
             'address' => env('APP_URL') . '/webhook/app-uninstalled',
         ],
-        'products_create' => [
-            'topic' => 'PRODUCTS_CREATE',
-            'class' => \App\Jobs\Shopify\ProductsCreateJob::class,
-            'address' => env('APP_URL') . '/webhook/products-create',
+        'fulfillments_create' => [
+            'topic' => 'FULFILLMENTS_CREATE',
+            'class' => \App\Jobs\Shopify\FulfillmentsCreateJob::class,
+            'address' => env('APP_URL') . '/webhook/fulfillments-create',
+        ],
+        'fulfillments_update' => [
+            'topic' => 'FULFILLMENTS_UPDATE',
+            'class' => \App\Jobs\Shopify\OrdersPaidJob::class,
+            'address' => env('APP_URL') . '/webhook/fulfillments-update',
+        ],
+        'orders_create' => [
+            'topic' => 'ORDERS_CREATE',
+            'class' => \App\Jobs\Shopify\OrdersCreateJob::class,
+            'address' => env('APP_URL') . '/webhook/orders-create',
         ],
     ],
 
