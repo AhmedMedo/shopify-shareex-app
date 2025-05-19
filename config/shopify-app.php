@@ -410,6 +410,11 @@ return [
             'class' => \App\Jobs\Shopify\OrdersCreateJob::class,
             'address' => env('APP_URL') . '/webhook/orders-create',
         ],
+        'customers_update' => [
+            'topic' => 'CUSTOMERS_UPDATE',
+            'class' => \App\Jobs\Shopify\CustomersUpdateJob::class,
+            'address' => env('APP_URL') . '/webhook/customers-update',
+        ],
     ],
 
     /*
