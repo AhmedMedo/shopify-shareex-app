@@ -21,23 +21,7 @@ use Osiset\ShopifyApp\Services\ApiHelper;
 |
 */
 
-Route::get('test', function () {
-    $shop = \App\Models\User::latest()->first();
-    $orderId  = '5973232648294';
-    $response = Http::withHeaders([
-        'X-Shopify-Access-Token' => $shop->password,
-    ])->get("https://{$shop->name}/admin/api/2025-04/orders/{$orderId}.json");
-    dd($response->json());
-    $shop = \App\Models\User::first();
-    $orderId  = '6468709941561';
-    $response = Http::withHeaders([
-        'X-Shopify-Access-Token' => $shop->password,
-    ])->get("https://{$shop->name}/admin/api/2025-04/orders/{$orderId}.json");
 
-    dd($response->json());
-    // Step 1: List all webhooks (GraphQL)
-
-});
 
 // Default route for the application within Shopify after authentication
 Route::middleware(['verify.shopify'])->group(function () {
@@ -68,3 +52,25 @@ Route::middleware(['verify.shopify'])->group(function () {
 //     return view('welcome');
 // });
 
+Route::get('admin/login', function () {
+    return view('admin.auth.login');
+});
+
+Route::post('admin/login',[\App\Http\Controllers\Admin\AdminController::class, 'login'])->name('admin.login');
+Route::group([
+    'prefix' => 'admin',
+    'middleware' => ['web', 'auth:admin'],
+    'as' => 'admin.'
+], function () {
+    Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'index'])->name('home');
+
+    Route::post('/orders/{order}/update-city', [\App\Http\Controllers\Admin\AdminController::class, 'updateShippingCity'])
+        ->name('orders.update-city');
+
+    Route::post('/orders/{order}/update-status', [\App\Http\Controllers\Admin\AdminController::class, 'updateShippingStatus'])
+        ->name('orders.update-status');
+
+    //logout
+    Route::get('/logout', [\App\Http\Controllers\Admin\AdminController::class, 'logout'])->name('logout');
+
+});

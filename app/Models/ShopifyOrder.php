@@ -29,7 +29,9 @@ class ShopifyOrder extends Model
         'note_attributes',
         'tags',
         'test',
-        'processed_at'
+        'processed_at',
+        'shareex_shipping_city',
+        'shipping_status',
     ];
 
     protected $casts = [

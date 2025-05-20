@@ -1,121 +1,36 @@
 <?php
 
-namespace App\Jobs\Shopify;
+namespace App\Services\Shareex;
 
 use App\Models\AreaMapping;
 use App\Models\ShipmentLog;
 use App\Models\ShopifyOrder;
-use App\Models\User as ShopifyStore;
-use App\Services\Shareex\ShareexApiService;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Arr;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
-use Osiset\ShopifyApp\Exceptions\InvalidShopDomainException;
 use Osiset\ShopifyApp\Objects\Values\ShopDomain;
-use stdClass;
 
-class FulfillmentsCreateJob implements ShouldQueue
+class ShippingService
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public ShopDomain $shopDomain;
-    public stdClass $data;
-
-    /**
-     * @throws InvalidShopDomainException
-     */
-    public function __construct(string $shopDomain, stdClass $data)
+    public function __construct(private readonly ShopifyOrder $order)
     {
-        $this->shopDomain = new ShopDomain($shopDomain);
-        $this->data = $data;
+
     }
 
-    public function handle(): void
+
+    public function sendToShareex(): void
     {
-        Log::info("FulfillmentsCreateJob: Handling webhook for shop {$this->shopDomain->toNative()} and fulfillment ID {$this->data->id}");
+        $shop = $this->order->user;
+        $shareexApiService = new ShareexApiService($shop);
+        $shareexApiService->refreshCredentials();
 
-        // 1. Find the shop
-        $shop = $this->getShop();
-        if (!$shop) return;
+        $shipmentData = $this->prepareShipmentData($this->order);
+        if (!$shipmentData) return;
 
-        // 2. Initialize Shareex service
+        // 5. Send to Shareex
+        $this->processSending($shareexApiService, $this->order, $shipmentData);
 
 
-        // 3. Get order data
-        $order = $this->getOrderData($shop);
-        if (!$order) return;
-
-        $order->update([
-            'shipping_status' => \App\Enum\ShippingStatusEnum::READY_TO_SHIP->value
-        ]);
-
-        $order->refresh();
-        Log::debug('FulfillmentsCreateJob: order updated', ["order" => $order]);
-        // 4. Prepare shipment data
-
-//        $shareexApiService = new ShareexApiService($shop);
-//        $shareexApiService->refreshCredentials();
-//
-//        $shipmentData = $this->prepareShipmentData($order);
-//        if (!$shipmentData) return;
-//
-//        // 5. Send to Shareex
-//        $this->sendToShareex($shareexApiService, $order, $shipmentData);
-    }
-
-    protected function getShop(): ?ShopifyStore
-    {
-        $shop = ShopifyStore::where("name", $this->shopDomain->toNative())->first();
-
-        if (!$shop) {
-            Log::error("Shop not found with domain: {$this->shopDomain}");
-            return null;
-        }
-
-        return $shop;
-    }
-
-    protected function getOrderData(ShopifyStore $shop): ?ShopifyOrder
-    {
-        $order = ShopifyOrder::where("shop_id", $shop->id)
-            ->where("order_id", $this->data->order_id)
-            ->first();
-
-        if (!$order) {
-            Log::error("Order not found with ID: {$this->data->order_id}");
-            ShipmentLog::create([
-                "shop_id" => $shop->id,
-                "shopify_order_id" => (string) $this->data->order_id,
-                "action" => "OrderLookup",
-                "status" => "failed",
-                "error_message" => "Order not found in database."
-            ]);
-            return null;
-        }
-
-        // Update order with fulfillment data if needed
-//        $this->updateOrderWithFulfillment($order);
-
-        return $order;
-    }
-
-    protected function updateOrderWithFulfillment(ShopifyOrder $order): void
-    {
-        $fulfillments = $order->fulfillments ?? [];
-        $newFulfillment = [
-            'id' => $this->data->id,
-            'status' => $this->data->status,
-            'created_at' => $this->data->created_at,
-            'line_items' => $this->data->line_items,
-            'tracking_info' => $this->data->tracking_info ?? null
-        ];
-
-        $fulfillments[] = $newFulfillment;
-        $order->update(['fulfillments' => $fulfillments]);
     }
 
     protected function prepareShipmentData(ShopifyOrder $order): ?array
@@ -123,8 +38,11 @@ class FulfillmentsCreateJob implements ShouldQueue
         $shippingAddress = $this->getShippingAddress($order);
         if (!$shippingAddress) return null;
 
-        $areaMapping = $this->getAreaMapping($order->shop_id, $shippingAddress);
-        $shareexArea = $areaMapping ? $areaMapping->shareex_area_name : $shippingAddress['city'];
+//        $areaMapping = $this->getAreaMapping($order->shop_id, $shippingAddress);
+        $shareexArea = $order->shareex_shipping_city ?? $shippingAddress['city'];
+        if (!$shareexArea) {
+            Log::error('Shareex area found: ' . $shareexArea);
+        }
 
         return [
             "clientref" => "cr02",
@@ -196,13 +114,13 @@ class FulfillmentsCreateJob implements ShouldQueue
     protected function calculateTotalPieces(): int
     {
         $pieces = 0;
-        foreach ($this->data->line_items as $item) {
+        foreach ($this->order->line_items as $item) {
             $pieces += $item->quantity;
         }
         return $pieces;
     }
 
-    protected function sendToShareex(ShareexApiService $service, ShopifyOrder $order, array $payload): void
+    protected function processSending(ShareexApiService $service, ShopifyOrder $order, array $payload): void
     {
         Log::info("Attempting to send shipment to Shareex for order {$order->order_id}", $payload);
 
@@ -243,20 +161,5 @@ class FulfillmentsCreateJob implements ShouldQueue
         ShipmentLog::create($logData);
     }
 
-    protected function updateOrderTracking(ShopifyOrder $order, string $trackingNumber): void
-    {
-        $fulfillments = $order->fulfillments ?? [];
 
-        // Update the most recent fulfillment with tracking info
-        if (!empty($fulfillments)) {
-            $lastIndex = count($fulfillments) - 1;
-            $fulfillments[$lastIndex]['tracking_info'] = [
-                'number' => $trackingNumber,
-                'url' => null, // You might generate a tracking URL here
-                'company' => 'Shareex'
-            ];
-
-            $order->update(['fulfillments' => $fulfillments]);
-        }
-    }
 }

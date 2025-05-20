@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\EncryptException;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class ShareexCredential extends Model
+class ShareexCredential extends Authenticatable
 {
     use HasFactory;
 
@@ -29,6 +30,7 @@ class ShareexCredential extends Model
     // If base_url or username needs to be partially visible or queried, consider storing them differently or using a dedicated encryption package.
 
     protected $casts = [
+        'password' => 'hashed',
         // Laravel 9+ has built-in encrypted casting, but it's often better to handle explicitly for clarity
         // especially if you need to support older Laravel versions or have specific encryption needs.
         // For now, we will handle encryption/decryption via accessors/mutators for broader compatibility and control.
