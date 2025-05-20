@@ -35,7 +35,6 @@
                                 <td>{{ $order->email }}</td>
                                 <td>{{ $shippingAddress['city'] ?? '' }}</td>
                                 <td>
-                                <td>
                                     @if(!$order->shareex_shipping_city)
                                         <div class="d-flex align-items-center gap-2">
                                             <select class="form-select form-select-sm city-select"
@@ -64,6 +63,8 @@
                                     @endif
                                 </td>
                                 <td>
+
+
                                     @if($latestLog && $latestLog->shareex_serial_number)
                                         {{ $latestLog->shareex_serial_number }}
                                     @else
