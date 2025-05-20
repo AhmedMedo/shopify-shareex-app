@@ -88,13 +88,13 @@
                                     </span>
                                 </td>
                                 <td>
-                                    @if(!$order->shareex_shipping_city)
-                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#cityModal-{{ $order->id }}">
-                                            Set City
-                                        </button>
+{{--                                    @if(!$order->shareex_shipping_city)--}}
+{{--                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#cityModal-{{ $order->id }}">--}}
+{{--                                            Set City--}}
+{{--                                        </button>--}}
 
-                                        <!-- City Selection Modal -->
-                                    @endif
+{{--                                        <!-- City Selection Modal -->--}}
+{{--                                    @endif--}}
 
                                     @if($order->shipping_status === 'ready_to_ship')
                                         <form action="{{ route('admin.orders.update-status', $order->id) }}" method="POST" class="d-inline">
