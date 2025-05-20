@@ -34,7 +34,35 @@
                                 <td>{{ $shippingAddress['phone'] ?? '' }}</td>
                                 <td>{{ $order->email }}</td>
                                 <td>{{ $shippingAddress['city'] ?? '' }}</td>
-                                <td>{{ $order->shareex_shipping_city ?? 'Not set' }}</td>
+                                <td>
+                                <td>
+                                    @if(!$order->shareex_shipping_city)
+                                        <div class="d-flex align-items-center gap-2">
+                                            <select class="form-select form-select-sm city-select"
+                                                    data-order-id="{{ $order->id }}"
+                                                    style="width: 120px;">
+                                                <option value="">Select city</option>
+                                                @foreach(config('shareex_areas') as $city)
+                                                    <option value="{{ $city }}">{{ $city }}</option>
+                                                @endforeach
+                                            </select>
+                                            <button class="btn btn-sm btn-primary save-city-btn py-1 px-2"
+                                                    data-order-id="{{ $order->id }}"
+                                                    disabled>
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                        </div>
+                                    @else
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-light text-dark">{{ $order->shareex_shipping_city }}</span>
+                                            <button class="btn btn-sm btn-outline-secondary change-city-btn py-1 px-2"
+                                                    data-order-id="{{ $order->id }}"
+                                                    data-current-city="{{ $order->shareex_shipping_city }}">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                        </div>
+                                    @endif
+                                </td>
                                 <td>
                                     @if($latestLog && $latestLog->shareex_serial_number)
                                         {{ $latestLog->shareex_serial_number }}
@@ -66,36 +94,7 @@
                                         </button>
 
                                         <!-- City Selection Modal -->
-                                        <div class="modal fade" id="cityModal-{{ $order->id }}" tabindex="-1" aria-labelledby="cityModalLabel-{{ $order->id }}" aria-hidden="true">
-                                            <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content">
-                                                    <form action="{{ route('admin.orders.update-city', $order->id) }}" method="POST">
-                                                        @csrf
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="cityModalLabel-{{ $order->id }}">Set ShareEx City for Order #{{ $order->order_number }}</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Select City</label>
-                                                                <select name="shareex_shipping_city" class="form-select" required>
-                                                                    <option value="">Select a city</option>
-                                                                    @foreach(config('shareex_areas') as $city)
-                                                                        <option value="{{ $city }}" {{ $order->shareex_shipping_city == $city ? 'selected' : '' }}>
-                                                                            {{ $city }}
-                                                                        </option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                            <button type="submit" class="btn btn-primary">Save changes</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>                                    @endif
+                                    @endif
 
                                     @if($order->shipping_status === 'ready_to_ship')
                                         <form action="{{ route('admin.orders.update-status', $order->id) }}" method="POST" class="d-inline">
@@ -106,9 +105,39 @@
                                     @endif
                                 </td>
                             </tr>
+                            <div class="modal fade" id="cityModal-{{ $order->id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form action="{{ route('admin.orders.update-city', $order->id) }}" method="POST">
+                                            @csrf
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Set ShareEx City for Order #{{ $order->order_number }}</h5>
+                                                <button type="button" class="btn-close" data-bs-close="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Select City</label>
+                                                    <select name="shareex_shipping_city" class="form-select" required>
+                                                        <option value="">Select a city</option>
+                                                        @foreach(config('shareex_areas') as $city)
+                                                            <option value="{{ $city }}">{{ $city }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <button type="submit" class="btn btn-primary">Save changes</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
                         @endforeach
                         </tbody>
                     </table>
+
                 </div>
 
                 <div class="mt-3">
@@ -118,3 +147,114 @@
         </div>
     </div>
 @endsection
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Enable save button when city is selected
+            document.addEventListener('change', function(e) {
+                if (e.target.classList.contains('city-select')) {
+                    const orderId = e.target.dataset.orderId;
+                    const saveBtn = document.querySelector(`.save-city-btn[data-order-id="${orderId}"]`);
+                    saveBtn.disabled = e.target.value === '';
+                }
+            });
+
+            // Save city selection
+            document.addEventListener('click', async function(e) {
+                if (e.target.closest('.save-city-btn')) {
+                    const btn = e.target.closest('.save-city-btn');
+                    const orderId = btn.dataset.orderId;
+                    const select = document.querySelector(`.city-select[data-order-id="${orderId}"]`);
+                    const city = select.value;
+
+                    if (!city) return;
+
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+                    try {
+                        const response = await fetch(`/admin/orders/${orderId}/update-city`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify({
+                                shareex_shipping_city: city
+                            })
+                        });
+
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert('Failed to update city');
+                            btn.innerHTML = '<i class="bi bi-check-lg"></i>';
+                            btn.disabled = false;
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('An error occurred');
+                        btn.innerHTML = '<i class="bi bi-check-lg"></i>';
+                        btn.disabled = false;
+                    }
+                }
+            });
+
+            // Change city button
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.change-city-btn')) {
+                    const btn = e.target.closest('.change-city-btn');
+                    const orderId = btn.dataset.orderId;
+                    const currentCity = btn.dataset.currentCity;
+                    const td = btn.closest('td');
+
+                    td.innerHTML = `
+                <div class="d-flex align-items-center gap-2">
+                    <select class="form-select form-select-sm city-select"
+                            data-order-id="${orderId}"
+                            style="width: 120px;">
+                        <option value="">Select city</option>
+                        @foreach(config('shareex_areas') as $city)
+                    <option value="{{ $city }}" ${currentCity === '{{ $city }}' ? 'selected' : ''}>
+                                {{ $city }}
+                    </option>
+@endforeach
+                    </select>
+                    <button class="btn btn-sm btn-primary save-city-btn py-1 px-2"
+                            data-order-id="${orderId}">
+                        <i class="bi bi-check-lg"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger cancel-change-btn py-1 px-2"
+                            data-order-id="${orderId}"
+                            data-current-city="${currentCity}">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            `;
+                }
+            });
+
+            // Cancel change
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.cancel-change-btn')) {
+                    const btn = e.target.closest('.cancel-change-btn');
+                    const orderId = btn.dataset.orderId;
+                    const currentCity = btn.dataset.currentCity;
+                    const td = btn.closest('td');
+
+                    td.innerHTML = `
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light text-dark">${currentCity}</span>
+                    <button class="btn btn-sm btn-outline-secondary change-city-btn py-1 px-2"
+                            data-order-id="${orderId}"
+                            data-current-city="${currentCity}">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                </div>
+            `;
+                }
+            });
+        });
+    </script>
+@endpush
