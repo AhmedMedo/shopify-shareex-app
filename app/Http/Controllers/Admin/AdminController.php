@@ -32,10 +32,18 @@ class AdminController extends Controller
 
     public function index()
     {
-        $orders = ShopifyOrder::with('shop')
-            ->where('shop_id','=', Auth::guard('admin')->user()->shop_id)
+        $orders = ShopifyOrder::with([
+            'shop',
+            'logs' => function($query) {
+                $query->where('action', 'SendShipment')
+                    ->latest()
+                    ->limit(1);
+            }
+        ])
+            ->where('shop_id', Auth::guard('admin')->user()->shop_id)
             ->orderBy('processed_at', 'desc')
             ->paginate(20);
+
         return view('admin.index', compact('orders'));
 
     }

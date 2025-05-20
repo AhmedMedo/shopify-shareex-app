@@ -49,4 +49,9 @@ class ShopifyOrder extends Model
     {
         return $this->belongsTo(User::class, 'shop_id');
     }
+
+    public function logs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ShipmentLog::class,'shopify_order_id','order_id');
+    }
 }

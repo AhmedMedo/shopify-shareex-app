@@ -14,9 +14,10 @@
                             <th>Customer</th>
                             <th>Phone</th>
                             <th>Email</th>
-                            <th>Shipping Address</th>
                             <th>Shipping City</th>
                             <th>ShareEx City</th>
+                            <th>ShareEx Serial</th>
+                            <th>Last Shipment Action</th>
                             <th>Shipping Status</th>
                             <th>Actions</th>
                         </tr>
@@ -25,19 +26,34 @@
                         @foreach($orders as $order)
                             @php
                                 $shippingAddress = $order->shipping_address;
-                                $customer = $order->customer;
+                                $latestLog = $order->logs->first();
                             @endphp
                             <tr>
                                 <td>{{ $order->order_number }}</td>
                                 <td>{{ $shippingAddress['first_name'] ?? '' }} {{ $shippingAddress['last_name'] ?? '' }}</td>
                                 <td>{{ $shippingAddress['phone'] ?? '' }}</td>
                                 <td>{{ $order->email }}</td>
-                                <td>
-                                    {{ $shippingAddress['address1'] ?? '' }}<br>
-                                    {{ $shippingAddress['address2'] ?? '' }}
-                                </td>
                                 <td>{{ $shippingAddress['city'] ?? '' }}</td>
                                 <td>{{ $order->shareex_shipping_city ?? 'Not set' }}</td>
+                                <td>
+                                    @if($latestLog && $latestLog->shareex_serial_number)
+                                        {{ $latestLog->shareex_serial_number }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($latestLog)
+                                        <span class="badge bg-{{ $latestLog->status === 'success' ? 'success' : 'danger' }}">
+                                            {{ ucfirst($latestLog->status) }}
+                                        </span>
+                                        <small class="text-muted d-block">
+                                            {{ $latestLog->created_at->diffForHumans() }}
+                                        </small>
+                                    @else
+                                        No shipment action
+                                    @endif
+                                </td>
                                 <td>
                                     <span class="badge bg-{{ $order->shipping_status === 'ready_to_ship' ? 'success' : ($order->shipping_status === 'shipped' ? 'info' : 'warning') }}">
                                         {{ ucfirst(str_replace('_', ' ', $order->shipping_status)) }}
@@ -84,7 +100,7 @@
                                         <form action="{{ route('admin.orders.update-status', $order->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             <input type="hidden" name="shipping_status" value="shipped">
-                                            <button type="submit" class="btn btn-sm btn-success">Send to Shareex</button>
+                                            <button type="submit" class="btn btn-sm btn-success">Mark as Shipped</button>
                                         </form>
                                     @endif
                                 </td>
