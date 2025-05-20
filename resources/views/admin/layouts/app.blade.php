@@ -64,6 +64,13 @@
             position: fixed;
             width: 100%;
         }
+
+        .modal-backdrop {
+            z-index: 1040 !important;
+        }
+        .modal {
+            z-index: 1050 !important;
+        }
     </style>
 
     @stack('styles')
