@@ -115,7 +115,7 @@ class ShippingService
     {
         $pieces = 0;
         foreach ($this->order->line_items as $item) {
-            $pieces += $item->quantity;
+            $pieces += $item['quantity'];
         }
         return $pieces;
     }
