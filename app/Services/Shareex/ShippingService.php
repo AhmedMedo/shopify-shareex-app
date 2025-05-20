@@ -20,7 +20,7 @@ class ShippingService
 
     public function sendToShareex(): void
     {
-        $shop = $this->order->user;
+        $shop = $this->order->shop;
         $shareexApiService = new ShareexApiService($shop);
         $shareexApiService->refreshCredentials();
 
