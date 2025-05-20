@@ -71,6 +71,6 @@ Route::group([
         ->name('orders.update-status');
 
     //logout
-    Route::get('/logout', [\App\Http\Controllers\Admin\AdminController::class, 'logout'])->name('logout');
+    Route::post('/logout', [\App\Http\Controllers\Admin\AdminController::class, 'logout'])->name('logout');
 
 });
