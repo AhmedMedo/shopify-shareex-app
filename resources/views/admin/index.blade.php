@@ -66,14 +66,14 @@
                                         </button>
 
                                         <!-- City Selection Modal -->
-                                        <div class="modal fade" id="cityModal-{{ $order->id }}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog">
+                                        <div class="modal fade" id="cityModal-{{ $order->id }}" tabindex="-1" aria-labelledby="cityModalLabel-{{ $order->id }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
                                                 <div class="modal-content">
                                                     <form action="{{ route('admin.orders.update-city', $order->id) }}" method="POST">
                                                         @csrf
                                                         <div class="modal-header">
-                                                            <h5 class="modal-title">Set ShareEx City for Order #{{ $order->order_number }}</h5>
-                                                            <button type="button" class="btn-close" data-bs-close="modal" aria-label="Close"></button>
+                                                            <h5 class="modal-title" id="cityModalLabel-{{ $order->id }}">Set ShareEx City for Order #{{ $order->order_number }}</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                         </div>
                                                         <div class="modal-body">
                                                             <div class="mb-3">
@@ -81,7 +81,9 @@
                                                                 <select name="shareex_shipping_city" class="form-select" required>
                                                                     <option value="">Select a city</option>
                                                                     @foreach(config('shareex_areas') as $city)
-                                                                        <option value="{{ $city }}">{{ $city }}</option>
+                                                                        <option value="{{ $city }}" {{ $order->shareex_shipping_city == $city ? 'selected' : '' }}>
+                                                                            {{ $city }}
+                                                                        </option>
                                                                     @endforeach
                                                                 </select>
                                                             </div>
@@ -93,8 +95,7 @@
                                                     </form>
                                                 </div>
                                             </div>
-                                        </div>
-                                    @endif
+                                        </div>                                    @endif
 
                                     @if($order->shipping_status === 'ready_to_ship')
                                         <form action="{{ route('admin.orders.update-status', $order->id) }}" method="POST" class="d-inline">

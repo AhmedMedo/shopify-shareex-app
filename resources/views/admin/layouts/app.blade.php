@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Admin Panel - @yield('title')</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -35,6 +36,33 @@
         }
         .main-content {
             padding: 20px;
+        }
+
+        .modal {
+            -webkit-overflow-scrolling: touch; /* Enable smooth scrolling on iOS */
+            overflow-y: auto; /* Ensure modal is scrollable */
+        }
+
+        .modal-dialog {
+            margin: 0.5rem auto; /* Add some margin on mobile */
+            max-width: 95%; /* Don't take full width on mobile */
+        }
+
+        @media (max-width: 575.98px) {
+            .modal-dialog {
+                margin: 0.5rem;
+                width: auto;
+            }
+            .modal-content {
+                border-radius: 0.3rem;
+            }
+        }
+
+        /* Fix for black screen issue */
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
         }
     </style>
 
@@ -131,6 +159,39 @@
 <!-- Bootstrap JS Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fix modal backdrop on mobile
+        document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+            button.addEventListener('click', function() {
+                const modalId = this.getAttribute('data-bs-target');
+                const modal = document.querySelector(modalId);
+
+                // Remove any existing backdrop
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+
+                // Show the modal
+                const bsModal = new bootstrap.Modal(modal);
+                bsModal.show();
+
+                // Fix for iOS devices
+                document.body.style.paddingRight = '0px';
+            });
+        });
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const openModal = document.querySelector('.modal.show');
+                if (openModal) {
+                    const bsModal = bootstrap.Modal.getInstance(openModal);
+                    bsModal.hide();
+                }
+            }
+        });
+    });
+</script>
 @stack('scripts')
 </body>
 </html>
