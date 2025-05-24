@@ -17,7 +17,6 @@
                             <th>Shipping City</th>
                             <th>ShareEx City</th>
                             <th>ShareEx Serial</th>
-                            <th>Last Shipment Action</th>
                             <th>Shipping Status</th>
                             <th>Actions</th>
                         </tr>
@@ -72,18 +71,6 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($latestLog)
-                                        <span class="badge bg-{{ $latestLog->status === 'success' ? 'success' : 'danger' }}">
-                                            {{ ucfirst($latestLog->status) }}
-                                        </span>
-                                        <small class="text-muted d-block">
-                                            {{ $latestLog->created_at->diffForHumans() }}
-                                        </small>
-                                    @else
-                                        No shipment action
-                                    @endif
-                                </td>
-                                <td>
                                     <span class="badge bg-{{ $order->shipping_status === 'ready_to_ship' ? 'success' : ($order->shipping_status === 'shipped' ? 'info' : 'warning') }}">
                                         {{ ucfirst(str_replace('_', ' ', $order->shipping_status)) }}
                                     </span>
@@ -98,11 +85,16 @@
 {{--                                    @endif--}}
 
                                     @if($order->shipping_status === 'ready_to_ship')
-                                        <form action="{{ route('admin.orders.update-status', $order->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <input type="hidden" name="shipping_status" value="shipped">
-                                            <button type="submit" class="btn btn-sm btn-success">Mark as Shipped</button>
-                                        </form>
+                                        @if($order->shareex_shipping_city)
+                                            <form action="{{ route('admin.orders.update-status', $order->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <input type="hidden" name="shipping_status" value="shipped">
+                                                <button type="submit" class="btn btn-sm btn-success">Mark as Shipped</button>
+                                            </form>
+                                        @else
+                                            Select Shareex City first
+                                        @endif
+
                                     @endif
                                 </td>
                             </tr>

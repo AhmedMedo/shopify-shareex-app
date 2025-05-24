@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enum\ShippingStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\ShopifyOrder;
 use App\Services\Shareex\ShippingService;
@@ -41,7 +42,8 @@ class AdminController extends Controller
             }
         ])
             ->where('shop_id', Auth::guard('admin')->user()->shop_id)
-            ->orderBy('processed_at', 'desc')
+            ->orderByRaw("CASE WHEN shipping_status = ? THEN 0 ELSE 1 END", [ShippingStatusEnum::READY_TO_SHIP->value])
+            ->orderBy('processed_at', 'desc') // secondary sort
             ->paginate(20);
 
         return view('admin.index', compact('orders'));

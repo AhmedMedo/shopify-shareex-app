@@ -50,7 +50,8 @@ class FulfillmentsCreateJob implements ShouldQueue
         if (!$order) return;
 
         $order->update([
-            'shipping_status' => \App\Enum\ShippingStatusEnum::READY_TO_SHIP->value
+            'shipping_status' => \App\Enum\ShippingStatusEnum::READY_TO_SHIP->value,
+            'processed_at' => now(),
         ]);
 
         $order->refresh();
