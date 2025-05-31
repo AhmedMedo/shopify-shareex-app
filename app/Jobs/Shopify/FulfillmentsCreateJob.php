@@ -7,12 +7,14 @@ use App\Models\ShipmentLog;
 use App\Models\ShopifyOrder;
 use App\Models\User as ShopifyStore;
 use App\Services\Shareex\ShareexApiService;
+use App\Services\Shareex\ShippingService;
+use App\Services\ShippingCityMapperService;
+use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Osiset\ShopifyApp\Exceptions\InvalidShopDomainException;
 use Osiset\ShopifyApp\Objects\Values\ShopDomain;
@@ -58,6 +60,35 @@ class FulfillmentsCreateJob implements ShouldQueue
         Log::debug('FulfillmentsCreateJob: order updated', ["order" => $order]);
         // 4. Prepare shipment data
 
+        $cityMapper = new ShippingCityMapperService();
+        $shareexCity =  $cityMapper->getShareexCity($order->shipping_address);
+        if (!$shareexCity) {
+            Log::error('Shareex city found:',[
+                'shop_id' => $order->shop_id,
+                'shareex_city' => $shareexCity,
+                'shipping_address' => $order->shipping_address
+            ]);
+            return;
+        }
+
+
+        $order->update([
+            'shareex_shipping_city' => $shareexCity
+        ]);
+
+
+        try {
+            $service = new ShippingService($order);
+            if($service->sendToShareex()) {
+
+                $order->update([
+                    'shipping_status' => \App\Enum\ShippingStatusEnum::SHIPPED->value
+                ]);
+            };
+
+        }catch (Exception $e) {
+            Log::error('Error updating shipping status: ' . $e->getMessage());
+        }
 //        $shareexApiService = new ShareexApiService($shop);
 //        $shareexApiService->refreshCredentials();
 //

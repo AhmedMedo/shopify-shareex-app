@@ -2,12 +2,11 @@
 
 namespace App\Jobs\Shopify;
 
-use App\Models\User as ShopifyStore; // Kyon147 package uses User model as Shop by default
-use App\Models\ShipmentLog;
 use App\Models\AreaMapping;
-use App\Services\Shareex\ShareexApiService; // Corrected Service
+use App\Models\ShipmentLog;
+use App\Models\User as ShopifyStore;
+use App\Services\Shareex\ShareexApiService;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -16,6 +15,9 @@ use Illuminate\Support\Facades\Log;
 use Osiset\ShopifyApp\Exceptions\InvalidShopDomainException;
 use Osiset\ShopifyApp\Objects\Values\ShopDomain;
 use stdClass;
+
+// Kyon147 package uses User model as Shop by default
+// Corrected Service
 
 class OrdersPaidJob implements ShouldQueue
 {

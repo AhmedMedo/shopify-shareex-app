@@ -1,14 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Route;
-use App\Livewire\Shopify\Settings\ShareexCredentials;
+use App\Livewire\Shopify\Settings\ApplicationLogs;
 use App\Livewire\Shopify\Settings\AreaMappings;
+use App\Livewire\Shopify\Settings\ShareexCredentials;
 use App\Livewire\Shopify\Settings\ShippingRateRules;
 use App\Livewire\Shopify\Shipments\ShipmentLogs;
-use App\Livewire\Shopify\Settings\ApplicationLogs;
-use Osiset\ShopifyApp\Contracts\Queries\Shop as IShopQuery;
-use Osiset\ShopifyApp\Services\ApiHelper;
+use App\Services\ShippingCityMapperService;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,7 +19,13 @@ use Osiset\ShopifyApp\Services\ApiHelper;
 |
 */
 
+Route::get('/test', function () {
+    $order = \App\Models\ShopifyOrder::query()->latest()->first();
+    $cityMapper = new ShippingCityMapperService();
+    $shareexCity =  $cityMapper->getShareexCity($order->shipping_address);
+    dd($shareexCity);
 
+});
 
 // Default route for the application within Shopify after authentication
 Route::middleware(['verify.shopify'])->group(function () {

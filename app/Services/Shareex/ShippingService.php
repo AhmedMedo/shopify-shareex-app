@@ -5,9 +5,7 @@ namespace App\Services\Shareex;
 use App\Models\AreaMapping;
 use App\Models\ShipmentLog;
 use App\Models\ShopifyOrder;
-use App\Models\User;
 use Illuminate\Support\Facades\Log;
-use Osiset\ShopifyApp\Objects\Values\ShopDomain;
 
 class ShippingService
 {
@@ -18,17 +16,17 @@ class ShippingService
     }
 
 
-    public function sendToShareex(): void
+    public function sendToShareex(): bool
     {
         $shop = $this->order->shop;
         $shareexApiService = new ShareexApiService($shop);
         $shareexApiService->refreshCredentials();
 
         $shipmentData = $this->prepareShipmentData($this->order);
-        if (!$shipmentData) return;
+        if (!$shipmentData) return false;
 
         // 5. Send to Shareex
-        $this->processSending($shareexApiService, $this->order, $shipmentData);
+        return $this->processSending($shareexApiService, $this->order, $shipmentData);
 
 
     }
@@ -39,7 +37,7 @@ class ShippingService
         if (!$shippingAddress) return null;
 
 //        $areaMapping = $this->getAreaMapping($order->shop_id, $shippingAddress);
-        $shareexArea = $order->shareex_shipping_city ?? $shippingAddress['city'];
+        $shareexArea = $order->shareex_shipping_city;
         if (!$shareexArea) {
             Log::error('Shareex area found: ' . $shareexArea);
         }
@@ -120,17 +118,18 @@ class ShippingService
         return $pieces;
     }
 
-    protected function processSending(ShareexApiService $service, ShopifyOrder $order, array $payload): void
+    protected function processSending(ShareexApiService $service, ShopifyOrder $order, array $payload): bool
     {
         Log::info("Attempting to send shipment to Shareex for order {$order->order_id}", $payload);
 
         $response = $service->sendShipment($payload);
 
-        $this->logShipmentResult($order, $payload, $response);
+       return $this->logShipmentResult($order, $payload, $response);
     }
 
-    protected function logShipmentResult(ShopifyOrder $order, array $payload, $response): void
+    protected function logShipmentResult(ShopifyOrder $order, array $payload, $response): bool
     {
+        $success = false;
         $logData = [
             "shop_id" => $order->shop_id,
             "shopify_order_id" => (string) $order->order_id,
@@ -151,6 +150,7 @@ class ShippingService
 //                $this->updateOrderTracking($order, $serial);
 //            }
 
+            $success = true;
             Log::info("Successfully sent shipment for order {$order->order_id}, serial: {$serial}");
         } else {
             $logData["status"] = "failed";
@@ -159,6 +159,8 @@ class ShippingService
         }
 
         ShipmentLog::create($logData);
+
+        return $success;
     }
 
 

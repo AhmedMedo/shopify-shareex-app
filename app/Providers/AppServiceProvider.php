@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
-use App\Services\Shareex\ShareexApiService; // Corrected Namespace and Class
-use Illuminate\Support\ServiceProvider;
+use App\Services\Shareex\ShareexApiService;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\ServiceProvider;
+
+// Corrected Namespace and Class
 
 class AppServiceProvider extends ServiceProvider
 {

@@ -2,12 +2,13 @@
 
 namespace App\Services\Shareex;
 
-use App\Models\ShareexCredential; // Will be created/renamed later
+use App\Models\ShareexCredential;
 use App\Models\User as ShopifyStore;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+
+// Will be created/renamed later
 
 class ShareexApiService
 {
