@@ -78,6 +78,7 @@ class FulfillmentsCreateJob implements ShouldQueue
 
 
         try {
+            $order = $order->refresh();
             $service = new ShippingService($order);
             if($service->sendToShareex()) {
 
