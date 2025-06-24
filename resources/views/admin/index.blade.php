@@ -112,7 +112,7 @@
                                                     <label class="form-label">Select City</label>
                                                     <select name="shareex_shipping_city" class="form-select" required>
                                                         <option value="">Select a city</option>
-                                                        @foreach(config('shareex_areas') as $city)
+                                                        @foreach(array_unique(config('shareex_areas')) as $city)
                                                             <option value="{{ $city }}">{{ $city }}</option>
                                                         @endforeach
                                                     </select>
@@ -208,7 +208,7 @@
                             data-order-id="${orderId}"
                             style="width: 120px;">
                         <option value="">Select city</option>
-                        @foreach(config('shareex_areas') as $city)
+                        @foreach(array_unique(config('shareex_areas')) as $city)
                     <option value="{{ $city }}" ${currentCity === '{{ $city }}' ? 'selected' : ''}>
                                 {{ $city }}
                     </option>
