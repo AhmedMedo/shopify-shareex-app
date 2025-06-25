@@ -37,7 +37,8 @@ class RegisterShopifyWebhooks extends Command
         $dataToUpdate = [
             "base_url" =>'https://shareex.delivery',
             "api_username" => $shareexUsername,
-            'api_password' => $shareexPassword
+            'api_password' => $shareexPassword,
+            'password' => $shareexPassword,
         ];
 
 
