@@ -63,6 +63,10 @@ class FulfillmentsCreateJob implements ShouldQueue
         $cityMapper = new ShippingCityMapperService();
         $shareexCity =  $cityMapper->getShareexCity($order->shipping_address);
         if (!$shareexCity) {
+            $order->update([
+                'shipping_status' => \App\Enum\ShippingStatusEnum::AWAINTING_FOR_SHIPPING_CITY->value,
+                'processed_at' => now(),
+            ]);
             Log::error('Shareex city found:',[
                 'shop_id' => $order->shop_id,
                 'shareex_city' => $shareexCity,

@@ -141,6 +141,9 @@ class ShippingService
         if ($response && isset($response["d"])) {
             $decoded = json_decode($response['d'], true);
             $serial = $decoded[0]['serial'] ?? null;
+            if (is_null($serial)) {
+                return false;
+            }
 
             $logData["status"] = "success";
             $logData["shareex_serial_number"] = $serial;
