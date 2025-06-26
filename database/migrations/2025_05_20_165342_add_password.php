@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('shareex_credentials', 'password')) {
+            return; // Skip if the column already exists
+        }
         Schema::table('shareex_credentials', function (Blueprint $table) {
             $table->string('password')->nullable();
         });
