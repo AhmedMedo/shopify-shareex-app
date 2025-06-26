@@ -28,7 +28,7 @@ class updateOrderSerialCommand extends Command
         $this->info('Starting to update order serials...');
 
         $orders = \App\Models\ShopifyOrder::whereNull('shipping_serial')
-            ->where('shipping_status', \App\Enum\ShippingStatusEnum::READY_TO_SHIP->value)
+//            ->where('shipping_status', \App\Enum\ShippingStatusEnum::READY_TO_SHIP->value)
             ->get();
 
         foreach ($orders as $order) {
