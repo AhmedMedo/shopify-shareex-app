@@ -32,6 +32,7 @@ class ShopifyOrder extends Model
         'processed_at',
         'shareex_shipping_city',
         'shipping_status',
+        'shipping_serial',
     ];
 
     protected $casts = [

@@ -265,6 +265,7 @@ class FulfillmentsCreateJob implements ShouldQueue
 //            if ($serial) {
 //                $this->updateOrderTracking($order, $serial);
 //            }
+            $order->update(['shipping_serial' => $serial]);
 
             Log::info("Successfully sent shipment for order {$order->order_id}, serial: {$serial}");
         } else {

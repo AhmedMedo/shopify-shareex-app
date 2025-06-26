@@ -20,6 +20,7 @@ class ShareexCredential extends Authenticatable
         "base_url",
         "api_username",
         "api_password",
+        'password',
     ];
 
     // Automatically encrypt these attributes when setting them

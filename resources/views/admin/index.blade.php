@@ -25,7 +25,7 @@
                         @foreach($orders as $order)
                             @php
                                 $shippingAddress = $order->shipping_address;
-                                $latestLog = $order->logs->first();
+                                $latestLog = $order->logs->last();
                             @endphp
                             <tr>
                                 <td>{{ $order->order_number }}</td>
@@ -64,8 +64,8 @@
                                 <td>
 
 
-                                    @if($latestLog && $latestLog->shareex_serial_number)
-                                        {{ $latestLog->shareex_serial_number }}
+                                    @if($order->shipping_serial)
+                                        {{ $order->shipping_serial }}
                                     @else
                                         -
                                     @endif
