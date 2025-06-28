@@ -42,7 +42,7 @@ class FulfillmentsCreateJob implements ShouldQueue
 
         // 1. Find the shop
         $shop = $this->getShop();
-        if (!$shop) return;
+        if (!$shop || !$shop->is_active) return;
 
         // 2. Initialize Shareex service
 
