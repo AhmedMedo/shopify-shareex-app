@@ -17,6 +17,8 @@ class RegisterShopifyWebhooks extends Command
     public function handle()
     {
         $shop = $this->ask('Enter the Shopify store domain (e.g. mystore.myshopify.com)');
+        $storeDomain = $this->ask('Enter the store domain (e.g. kamiz.com)');
+        $storeName = $this->ask('Enter the store name (e.g. My Store)');
         $accessToken = $this->ask('Enter the Shopify access token');
         $shareexUsername = $this->ask('Enter the ShareEx API username');
         $shareexPassword = $this->ask('Enter the ShareEx API password');
@@ -29,6 +31,8 @@ class RegisterShopifyWebhooks extends Command
         if (!$user) {
             $user = User::create([
                 'name' => $shop,
+                'shop_name' => $storeName,
+                'shop_domain' => $storeDomain,
                 'email' => $email,
                 'password' => $accessToken,
             ]);

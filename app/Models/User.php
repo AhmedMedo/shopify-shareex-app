@@ -24,6 +24,8 @@ class User extends Authenticatable implements IShopModel
     protected $fillable = [
         'name',
         'email',
+        'shop_name',
+        'shop_domain',
         'password',
     ];
 
