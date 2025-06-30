@@ -69,11 +69,11 @@ class ShippingCityMapperService
         }
 
         // 2. Try extracting from full address
-        $mappedCity = $this->extractCityFromAddress($fullAddress);
-        if ($mappedCity) {
-            $this->logMapping($fullAddress, $mappedCity, 'extraction');
-            return $mappedCity;
-        }
+//        $mappedCity = $this->extractCityFromAddress($fullAddress);
+//        if ($mappedCity) {
+//            $this->logMapping($fullAddress, $mappedCity, 'extraction');
+//            return $mappedCity;
+//        }
 
         // 3. Try fuzzy matching
         $mappedCity = $this->fuzzyMatch($city);
