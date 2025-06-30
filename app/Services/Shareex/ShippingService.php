@@ -153,6 +153,9 @@ class ShippingService
 //                $this->updateOrderTracking($order, $serial);
 //            }
 
+            $order->update(['shipping_serial' => $serial]);
+
+
             $success = true;
             Log::info("Successfully sent shipment for order {$order->order_id}, serial: {$serial}");
         } else {
