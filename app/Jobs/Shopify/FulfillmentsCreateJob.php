@@ -164,7 +164,7 @@ class FulfillmentsCreateJob implements ShouldQueue
         $shareexArea = $areaMapping ? $areaMapping->shareex_area_name : $shippingAddress['city'];
 
         return [
-            "clientref" => "cr02",
+            "clientref" => $order->order_number,
             "area" => $shareexArea ?? 'المقطم', // Default area if none found
             "name" => $this->getCustomerName($order, $shippingAddress),
             "tel" => $this->getCustomerPhone($shippingAddress, $order),
