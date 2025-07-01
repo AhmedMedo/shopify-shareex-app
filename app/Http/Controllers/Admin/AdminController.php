@@ -53,13 +53,17 @@ class AdminController extends Controller
     public function updateShippingCity(Request $request, $orderId)
     {
         $request->validate([
-            'shareex_shipping_city' => 'required|string'
+            'shareex_shipping_city' => 'required|string',
         ]);
 
         $order = ShopifyOrder::findOrFail($orderId);
-        $order->update([
-            'shareex_shipping_city' => $request->shareex_shipping_city
-        ]);
+        $toUpdate['shareex_shipping_city'] = $request->shareex_shipping_city;
+        if ($order->shipping_status == ShippingStatusEnum::AWAINTING_FOR_SHIPPING_CITY->value)
+        {
+            $toUpdate['shipping_status'] = ShippingStatusEnum::READY_TO_SHIP->value;
+        }
+        $order->update($toUpdate);
+
 
         return back()->with('success', 'Shipping city updated successfully');
     }
