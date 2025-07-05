@@ -127,7 +127,9 @@
                                                     </button>
                                                 </form>
                                             @elseif($order->shipping_status === 'awaiting_for_shipping_city')
-                                                <span class="text-muted small">Set city first</span>
+                                                <button type="button" class="btn btn-sm btn-secondary" disabled data-bs-toggle="tooltip" data-bs-placement="top" title="Set city first">
+                                                    <i class="bi bi-info-circle"></i>
+                                                </button>
                                             @endif
                                         @endif
                                     </div>
@@ -177,6 +179,12 @@
                 dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
                      '<"row"<"col-sm-12"tr>>' +
                      '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>'
+            });
+
+            // Enable Bootstrap tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
             });
 
             // Enable save button when city is selected
