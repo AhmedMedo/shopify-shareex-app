@@ -143,13 +143,30 @@
         </div>
     </div>
 @endsection
+@push('styles')
+    <style>
+        /* Ensure tooltips are not clipped by table-responsive */
+        .tooltip {
+            z-index: 2000 !important;
+        }
+    </style>
+@endpush
 @push('scripts')
     <script>
         function initTooltips() {
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
+            // Destroy all tooltips first
+            $('[data-bs-toggle="tooltip"]').each(function() {
+                var tooltip = bootstrap.Tooltip.getInstance(this);
+                if (tooltip) {
+                    tooltip.dispose();
+                }
             });
+            // Re-initialize
+            setTimeout(function() {
+                $('[data-bs-toggle="tooltip"]').each(function() {
+                    new bootstrap.Tooltip(this);
+                });
+            }, 100); // Small delay to ensure DOM is ready
         }
 
         $(document).ready(function() {
@@ -273,7 +290,7 @@
                         </button>
                     </div>
                 `);
-                initTooltips(); // Re-init tooltips after DOM change
+                setTimeout(initTooltips, 100);
             });
 
             // Cancel change
@@ -293,7 +310,7 @@
                         </button>
                     </div>
                 `);
-                initTooltips(); // Re-init tooltips after DOM change
+                setTimeout(initTooltips, 100);
             });
 
             // Handle form submissions within DataTable
