@@ -11,7 +11,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
-    <!-- DataTables CSS -->
+    <!-- DataTables Bootstrap 5 CSS ONLY -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
@@ -82,12 +82,15 @@
             padding-top: 0.85em;
         }
 
+        /* Bootstrap 5 pagination fix */
         .dataTables_wrapper .dataTables_paginate .paginate_button {
             padding: 0.375rem 0.75rem;
             margin-left: 2px;
             border: 1px solid #dee2e6;
             background-color: #fff;
             color: #0d6efd;
+            border-radius: 0.375rem;
+            font-size: 1rem;
         }
 
         .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
@@ -99,7 +102,14 @@
         .dataTables_wrapper .dataTables_paginate .paginate_button.current {
             background-color: #0d6efd;
             border-color: #0d6efd;
-            color: #fff;
+            color: #fff !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+            color: #6c757d !important;
+            background: #fff;
+            border-color: #dee2e6;
+            opacity: 0.65;
         }
 
         /* Tab styling improvements */

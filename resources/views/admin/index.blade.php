@@ -171,6 +171,15 @@
             }, 100); // Small delay to ensure DOM is ready
         }
 
+        function fixPagination() {
+            // Add Bootstrap 5 classes to DataTables pagination
+            $('.dataTables_paginate ul.pagination').addClass('pagination justify-content-center');
+            $('.dataTables_paginate ul.pagination li').addClass('page-item');
+            $('.dataTables_paginate ul.pagination li a').addClass('page-link');
+            // Remove DataTables default classes
+            $('.dataTables_paginate ul.pagination li').removeClass('paginate_button');
+        }
+
         $(document).ready(function() {
             // Initialize DataTable
             var table = $('#ordersTable').DataTable({
@@ -204,15 +213,19 @@
                 },
                 dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
                      '<"row"<"col-sm-12"tr>>' +
-                     '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>'
+                     '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                pagingType: 'full_numbers',
+                renderer: 'bootstrap'
             });
 
             // Initialize tooltips on page load
             initTooltips();
+            fixPagination();
 
-            // Re-initialize tooltips after every DataTable draw
+            // Re-initialize tooltips and fix pagination after every DataTable draw
             table.on('draw.dt', function() {
                 initTooltips();
+                fixPagination();
             });
 
             // Enable save button when city is selected
