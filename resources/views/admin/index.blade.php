@@ -145,6 +145,13 @@
 @endsection
 @push('scripts')
     <script>
+        function initTooltips() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
+
         $(document).ready(function() {
             // Initialize DataTable
             var table = $('#ordersTable').DataTable({
@@ -181,10 +188,12 @@
                      '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>'
             });
 
-            // Enable Bootstrap tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
+            // Initialize tooltips on page load
+            initTooltips();
+
+            // Re-initialize tooltips after every DataTable draw
+            table.on('draw.dt', function() {
+                initTooltips();
             });
 
             // Enable save button when city is selected
@@ -264,6 +273,7 @@
                         </button>
                     </div>
                 `);
+                initTooltips(); // Re-init tooltips after DOM change
             });
 
             // Cancel change
@@ -283,6 +293,7 @@
                         </button>
                     </div>
                 `);
+                initTooltips(); // Re-init tooltips after DOM change
             });
 
             // Handle form submissions within DataTable
