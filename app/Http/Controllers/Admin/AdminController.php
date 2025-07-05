@@ -31,23 +31,53 @@ class AdminController extends Controller
         ]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $orders = ShopifyOrder::with([
+        $activeTab = $request->get('tab', 'pending');
+        $shopId = Auth::guard('admin')->user()->shop_id;
+        
+        $query = ShopifyOrder::with([
             'shop',
             'logs' => function($query) {
                 $query->where('action', 'SendShipment')
                     ->latest()
                     ->limit(1);
             }
-        ])
-            ->where('shop_id', Auth::guard('admin')->user()->shop_id)
-            ->orderByRaw("CASE WHEN shipping_status = ? THEN 0 ELSE 1 END", [ShippingStatusEnum::READY_TO_SHIP->value])
-            ->orderBy('processed_at', 'desc') // secondary sort
-            ->paginate(20);
+        ])->where('shop_id', $shopId);
 
-        return view('admin.index', compact('orders'));
+        // Filter orders based on active tab
+        switch ($activeTab) {
+            case 'pending':
+                $query->where('shipping_status', ShippingStatusEnum::PENDING->value);
+                break;
+            case 'not_shipped':
+                $query->whereIn('shipping_status', [
+                    ShippingStatusEnum::READY_TO_SHIP->value,
+                    ShippingStatusEnum::AWAINTING_FOR_SHIPPING_CITY->value
+                ]);
+                break;
+            case 'shipped':
+                $query->where('shipping_status', ShippingStatusEnum::SHIPPED->value);
+                break;
+            default:
+                $query->where('shipping_status', ShippingStatusEnum::PENDING->value);
+        }
 
+        $orders = $query->orderBy('processed_at', 'desc')->get();
+
+        return view('admin.index', compact('orders', 'activeTab'));
+    }
+
+    public function showOrder($orderId)
+    {
+        $order = ShopifyOrder::with(['shop', 'logs'])->findOrFail($orderId);
+        
+        // Check if user has access to this order
+        if ($order->shop_id !== Auth::guard('admin')->user()->shop_id) {
+            abort(403, 'Unauthorized access to this order.');
+        }
+
+        return view('admin.order-details', compact('order'));
     }
 
     public function updateShippingCity(Request $request, $orderId)
@@ -57,13 +87,18 @@ class AdminController extends Controller
         ]);
 
         $order = ShopifyOrder::findOrFail($orderId);
+        
+        // Check if user has access to this order
+        if ($order->shop_id !== Auth::guard('admin')->user()->shop_id) {
+            abort(403, 'Unauthorized access to this order.');
+        }
+
         $toUpdate['shareex_shipping_city'] = $request->shareex_shipping_city;
         if ($order->shipping_status == ShippingStatusEnum::AWAINTING_FOR_SHIPPING_CITY->value)
         {
             $toUpdate['shipping_status'] = ShippingStatusEnum::READY_TO_SHIP->value;
         }
         $order->update($toUpdate);
-
 
         return back()->with('success', 'Shipping city updated successfully');
     }
@@ -75,6 +110,12 @@ class AdminController extends Controller
         ]);
 
         $order = ShopifyOrder::findOrFail($orderId);
+        
+        // Check if user has access to this order
+        if ($order->shop_id !== Auth::guard('admin')->user()->shop_id) {
+            abort(403, 'Unauthorized access to this order.');
+        }
+
         $order->update([
             'shipping_status' => $request->shipping_status
         ]);

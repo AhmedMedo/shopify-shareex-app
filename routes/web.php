@@ -60,6 +60,9 @@ Route::group([
 ], function () {
     Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'index'])->name('home');
 
+    Route::get('/orders/{order}', [\App\Http\Controllers\Admin\AdminController::class, 'showOrder'])
+        ->name('orders.show');
+
     Route::post('/orders/{order}/update-city', [\App\Http\Controllers\Admin\AdminController::class, 'updateShippingCity'])
         ->name('orders.update-city');
 
