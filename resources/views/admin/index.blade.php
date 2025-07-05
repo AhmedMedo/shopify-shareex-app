@@ -127,9 +127,11 @@
                                                     </button>
                                                 </form>
                                             @elseif($order->shipping_status === 'awaiting_for_shipping_city')
-                                                <button type="button" class="btn btn-sm btn-secondary" disabled data-bs-toggle="tooltip" data-bs-placement="top" title="Set city first">
-                                                    <i class="bi bi-info-circle"></i>
-                                                </button>
+                                                <span tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" title="Set city first">
+                                                    <button type="button" class="btn btn-sm btn-secondary" disabled style="pointer-events: none;">
+                                                        <i class="bi bi-info-circle"></i>
+                                                    </button>
+                                                </span>
                                             @endif
                                         @endif
                                     </div>
