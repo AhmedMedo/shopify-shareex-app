@@ -48,6 +48,9 @@ Route::middleware(['verify.shopify'])->group(function () {
 //     return view('welcome');
 // });
 
+Route::get('php',function (){
+   echo phpinfo();
+});
 Route::get('admin/login', function () {
     return view('admin.auth.login');
 });
