@@ -35,7 +35,7 @@ class AdminController extends Controller
     {
         $activeTab = $request->get('tab', 'pending');
         $shopId = Auth::guard('admin')->user()->shop_id;
-        
+
         $query = ShopifyOrder::with([
             'shop',
             'logs' => function($query) {
@@ -63,7 +63,7 @@ class AdminController extends Controller
                 $query->where('shipping_status', ShippingStatusEnum::PENDING->value);
         }
 
-        $orders = $query->orderBy('processed_at', 'desc')->get();
+        $orders = $query->orderBy('created_at', 'desc')->get();
 
         return view('admin.index', compact('orders', 'activeTab'));
     }
@@ -71,7 +71,7 @@ class AdminController extends Controller
     public function showOrder($orderId)
     {
         $order = ShopifyOrder::with(['shop', 'logs'])->findOrFail($orderId);
-        
+
         // Check if user has access to this order
         if ($order->shop_id !== Auth::guard('admin')->user()->shop_id) {
             abort(403, 'Unauthorized access to this order.');
@@ -87,7 +87,7 @@ class AdminController extends Controller
         ]);
 
         $order = ShopifyOrder::findOrFail($orderId);
-        
+
         // Check if user has access to this order
         if ($order->shop_id !== Auth::guard('admin')->user()->shop_id) {
             abort(403, 'Unauthorized access to this order.');
@@ -110,7 +110,7 @@ class AdminController extends Controller
         ]);
 
         $order = ShopifyOrder::findOrFail($orderId);
-        
+
         // Check if user has access to this order
         if ($order->shop_id !== Auth::guard('admin')->user()->shop_id) {
             abort(403, 'Unauthorized access to this order.');
