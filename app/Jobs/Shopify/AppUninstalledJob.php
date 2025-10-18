@@ -2,7 +2,7 @@
 
 namespace App\Jobs\Shopify;
 
-use App\Models\ShareexCredential;
+use App\Models\ShippingPartnerCredential;
 use App\Models\User as ShopifyStore;
 use App\Models\ShippingRateRule;
 use App\Models\AreaMapping;
@@ -65,7 +65,7 @@ class AppUninstalledJob implements ShouldQueue
         try {
             ShippingRateRule::where("shop_id", $shop->id)->delete();
             AreaMapping::where("shop_id", $shop->id)->delete();
-            ShareexCredential::where("shop_id", $shop->id)->delete();
+            ShippingPartnerCredential::where("shop_id", $shop->id)->delete();
             ShipmentLog::where("shop_id", $shop->id)->delete();
 
             // The ShopifyApp package usually soft deletes the shop or fully deletes it.

@@ -3,6 +3,18 @@
 namespace App\Providers;
 
 use App\Services\Shareex\ShareexApiService;
+use App\Services\ShippingPartners\Helper\PartnerLogger;
+use App\Services\ShippingPartners\Magex\MagexCityMapper;
+use App\Services\ShippingPartners\Magex\MagexPayloadBuilder;
+use App\Services\ShippingPartners\Magex\MagexResponseParser;
+use App\Services\ShippingPartners\Magex\MagexShippingPartner;
+use App\Services\ShippingPartners\Magex\MagexTransport;
+use App\Services\ShippingPartners\Shareex\ShareexCityMapper;
+use App\Services\ShippingPartners\Shareex\ShareexPayloadBuilder;
+use App\Services\ShippingPartners\Shareex\ShareexResponseParser;
+use App\Services\ShippingPartners\Shareex\ShareexShippingPartner;
+use App\Services\ShippingPartners\Shareex\ShareexTransport;
+use App\Services\ShippingPartners\ShippingPartnerFactory;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 
@@ -15,11 +27,37 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Register ShareexApiService. It will be resolved with the current shop context when injected.
-        $this->app->singleton(ShareexApiService::class, function ($app) {
-            // The ShareexApiService constructor now handles fetching the authenticated user (shop)
-            // or can be passed a shop instance if needed in specific contexts outside of a request cycle.
-            return new ShareexApiService();
+
+        $this->app->singleton(ShippingPartnerFactory::class, fn ($app) => new ShippingPartnerFactory($app));
+
+        $this->app->bind(ShareexShippingPartner::class, function ($app, array $params = []) {
+            $credentials = $params['credentials'];
+            $config = $params['config'];
+            $logger = $params['logger'];
+
+            return new ShareexShippingPartner(
+                credentials: $credentials,
+                transport: new ShareexTransport($credentials, $logger, $config['base_url']),
+                payloadBuilder: new ShareexPayloadBuilder(),
+                responseParser: new ShareexResponseParser(),
+                cityMapper: new ShareexCityMapper($app->make(\App\Services\ShippingCityMapperService::class)),
+                logger: $logger
+            );
+        });
+
+        $this->app->bind(MagexShippingPartner::class, function ($app, array $params = []) {
+            $credentials = $params['credentials'];
+            $config = $params['config'];
+            $logger = $params['logger'];
+
+            return new MagexShippingPartner(
+                credentials: $credentials,
+                transport: new MagexTransport($credentials, $logger, $config['base_url']),
+                payloadBuilder: new MagexPayloadBuilder(),
+                responseParser: new MagexResponseParser(),
+                cityMapper: new MagexCityMapper($app->make(\App\Services\ShippingCityMapperService::class)),
+                logger: $logger
+            );
         });
     }
 

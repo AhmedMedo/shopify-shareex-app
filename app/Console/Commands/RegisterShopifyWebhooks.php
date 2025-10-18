@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\ShareexCredential;
+use App\Models\ShippingPartnerCredential;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
@@ -20,8 +20,13 @@ class RegisterShopifyWebhooks extends Command
         $storeDomain = $this->ask('Enter the store domain (e.g. kamiz.com)');
         $storeName = $this->ask('Enter the store name (e.g. My Store)');
         $accessToken = $this->ask('Enter the Shopify access token');
-        $shareexUsername = $this->ask('Enter the ShareEx API username');
-        $shareexPassword = $this->ask('Enter the ShareEx API password');
+        $shippingUsername = $this->ask('Enter the Shipping API username');
+        $shippingPassword = $this->ask('Enter the Shipping API password');
+        //get choices from shipping_partners config
+        $partners = config('shipping_partners.partners');
+        $partnerNames = array_keys($partners);
+        $partner = $this->choice('Select the shipping partner', $partnerNames, \App\Enum\ShippingPartnerEnum::SHAREEX->value);
+
 
 
 
@@ -39,14 +44,15 @@ class RegisterShopifyWebhooks extends Command
         }
 
         $dataToUpdate = [
-            "base_url" =>'https://shareex.delivery',
-            "api_username" => $shareexUsername,
-            'api_password' => $shareexPassword,
-            'password' => $shareexPassword,
+            'base_url' => config("shipping_partners.partners.".$partner.'.base_url'),
+            'api_username' => $shippingUsername,
+            'api_password' => $shippingPassword,
+            'password' => $shippingPassword,
+            'partner' => $partner,
         ];
 
 
-        ShareexCredential::updateOrCreate(
+        ShippingPartnerCredential::updateOrCreate(
             ["shop_id" => $user->id], // Using user ID as shop_id
             $dataToUpdate
         );

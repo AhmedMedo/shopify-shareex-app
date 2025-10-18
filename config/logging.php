@@ -58,6 +58,20 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        'shareex' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/shareex.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'replace_placeholders' => true,
+        ],
+
+        'magex' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/magex.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'replace_placeholders' => true,
+        ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),

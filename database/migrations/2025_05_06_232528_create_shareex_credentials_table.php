@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('shareex_credentials', function (Blueprint $table) {
+        Schema::create('shipping_partner_credentials', function (Blueprint $table) {
             $table->id();
             $table->foreignId('shop_id')->unique()->constrained('users')->onDelete('cascade'); // kyon147/laravel-shopify uses 'users' table for shops
             $table->text('base_url'); // Encrypted
             $table->text('api_username'); // Encrypted
             $table->text('api_password'); // Encrypted
+            $table->string('partner');
             $table->timestamps();
         });
     }
@@ -26,7 +27,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('shareex_credentials');
+        Schema::dropIfExists('shipping_partner_credentials');
     }
 };
 

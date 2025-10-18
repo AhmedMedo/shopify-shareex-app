@@ -3,7 +3,7 @@
 namespace App\Jobs\Shopify;
 
 use App\Models\AreaMapping;
-use App\Models\ShareexCredential;
+use App\Models\ShippingPartnerCredential;
 use App\Models\ShipmentLog;
 use App\Models\ShippingRateRule;
 use App\Models\User as ShopifyStore;

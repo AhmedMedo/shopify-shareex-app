@@ -7,7 +7,7 @@ use App\Models\ShipmentLog;
 use App\Models\ShopifyOrder;
 use App\Models\User as ShopifyStore;
 use App\Services\Shareex\ShareexApiService;
-use App\Services\Shareex\ShippingService;
+use App\Services\ShippingService;
 use App\Services\ShippingCityMapperService;
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -83,13 +83,8 @@ class FulfillmentsCreateJob implements ShouldQueue
 
         try {
             $order = $order->refresh();
-            $service = new ShippingService($order);
-            if($service->sendToShareex()) {
-
-                $order->update([
-                    'shipping_status' => \App\Enum\ShippingStatusEnum::SHIPPED->value
-                ]);
-            };
+            $shippingService = app(ShippingService::class);
+            $shippingService->dispatchShipment($order);
 
         }catch (Exception $e) {
             Log::error('Error updating shipping status: ' . $e->getMessage());

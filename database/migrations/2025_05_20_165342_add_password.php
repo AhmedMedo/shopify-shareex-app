@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Schema::hasColumn('shareex_credentials', 'password')) {
+        if (Schema::hasColumn('shipping_partner_credentials', 'password')) {
             return; // Skip if the column already exists
         }
-        Schema::table('shareex_credentials', function (Blueprint $table) {
+        Schema::table('shipping_partner_credentials', function (Blueprint $table) {
             $table->string('password')->nullable();
         });
 
-        \App\Models\ShareexCredential::query()
+        \App\Models\ShippingPartnerCredential::query()
             ->whereNotNull('api_password')->each(function ($credential) {
                 $credential->password = $credential->api_password;
                 $credential->save();
@@ -30,7 +30,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('shareex_credentials', function (Blueprint $table) {
+        Schema::table('shipping_partner_credentials', function (Blueprint $table) {
             $table->dropColumn('password');
         });
     }

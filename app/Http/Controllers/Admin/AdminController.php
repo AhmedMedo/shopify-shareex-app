@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enum\ShippingStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\ShopifyOrder;
-use App\Services\Shareex\ShippingService;
+use App\Services\ShippingService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -121,10 +121,9 @@ class AdminController extends Controller
         ]);
 
         try {
-            $service = new ShippingService($order);
-            $service->sendToShareex();
-
-        }catch (Exception $e) {
+            $shippingService = app(ShippingService::class);
+            $shippingService->dispatchShipment($order);
+        } catch (Exception $e) {
             Log::error('Error updating shipping status: ' . $e->getMessage());
         }
 

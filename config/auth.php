@@ -71,7 +71,7 @@ return [
 
         'admins' => [
             'driver' => 'eloquent',
-            'model' => App\Models\ShareexCredential::class,
+            'model' => App\Models\ShippingPartnerCredential::class,
         ],
 
         // 'users' => [

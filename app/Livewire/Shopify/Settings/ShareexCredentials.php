@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Shopify\Settings;
 
-use App\Models\ShareexCredential; // Corrected Model
+use App\Models\ShippingPartnerCredential; // Corrected Model
 use App\Models\User as ShopifyStore;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -23,13 +23,13 @@ class ShareexCredentials extends Component // Corrected Class Name
     {
 
         $this->shopId = Auth::user()->id;
-        $credentials = ShareexCredential::where("shop_id", $this->shopId)->first();
+        $credentials = ShippingPartnerCredential::where("shop_id", $this->shopId)->first();
 
         if ($credentials) {
             $this->baseUrl = $credentials->base_url ?? ""; // Accessor will decrypt
             $this->apiUsername = $credentials->api_username ?? ""; // Accessor will decrypt
             // Do not load the actual password into the form for security, only indicate it exists if it was ever set.
-            // The ShareexCredential model returns null from accessor if password is not set or decryption fails.
+            // The ShippingPartnerCredential model returns null from accessor if password is not set or decryption fails.
             $this->credentialsExist = (bool)$credentials->api_password; // Check if password was ever set (even if it is null now after decryption failure)
         }
     }
@@ -50,11 +50,11 @@ class ShareexCredentials extends Component // Corrected Class Name
             ];
 
             if (!empty($this->apiPassword)) {
-                // Mutator in ShareexCredential model will handle encryption
+                // Mutator in ShippingPartnerCredential model will handle encryption
                 $dataToUpdate["api_password"] = $this->apiPassword;
             }
 
-            ShareexCredential::updateOrCreate(
+            ShippingPartnerCredential::updateOrCreate(
                 ["shop_id" => $shop->id],
                 $dataToUpdate
             );
