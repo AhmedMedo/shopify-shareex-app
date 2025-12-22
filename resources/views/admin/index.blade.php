@@ -71,14 +71,15 @@
                                     @else
                                         @if(!$order->shareex_shipping_city)
                                             <div class="d-flex align-items-center gap-2">
-                                                <select class="form-select form-select-sm city-select"
-                                                        data-order-id="{{ $order->id }}"
-                                                        style="width: 120px;">
-                                                    <option value="">Select city</option>
-                                                    @foreach(array_unique(config('shareex_areas')) as $city)
-                                                        <option value="{{ $city }}">{{ $city }}</option>
-                                                    @endforeach
-                                                </select>
+                                                <div class="city-select-wrapper">
+                                                    <select class="form-select form-select-sm city-select"
+                                                            data-order-id="{{ $order->id }}">
+                                                        <option value="">Select city</option>
+                                                        @foreach(array_unique(config('shareex_areas')) as $city)
+                                                            <option value="{{ $city }}">{{ $city }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
                                                 <button class="btn btn-sm btn-primary save-city-btn py-1 px-2"
                                                         data-order-id="{{ $order->id }}"
                                                         disabled>
@@ -151,6 +152,35 @@
         .tooltip {
             z-index: 2000 !important;
         }
+        
+        /* Select2 custom styling for compact table cells */
+        .select2-container--bootstrap-5 {
+            min-width: 150px !important;
+        }
+        
+        .select2-container--bootstrap-5 .select2-selection--single {
+            height: 31px !important;
+            padding: 0.25rem 0.5rem !important;
+            font-size: 0.875rem !important;
+        }
+        
+        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+            line-height: 1.5 !important;
+            padding-left: 0 !important;
+        }
+        
+        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+            height: 29px !important;
+        }
+        
+        .select2-dropdown {
+            z-index: 2100 !important;
+        }
+        
+        /* Make select2 work nicely in flex container */
+        .city-select-wrapper {
+            min-width: 150px;
+        }
     </style>
 @endpush
 @push('scripts')
@@ -178,6 +208,22 @@
             $('.dataTables_paginate ul.pagination li a').addClass('page-link');
             // Remove DataTables default classes
             $('.dataTables_paginate ul.pagination li').removeClass('paginate_button');
+        }
+
+        function initSelect2() {
+            // Initialize Select2 on all city-select elements that haven't been initialized yet
+            $('.city-select').each(function() {
+                if (!$(this).hasClass('select2-hidden-accessible')) {
+                    $(this).select2({
+                        theme: 'bootstrap-5',
+                        placeholder: 'Select city',
+                        allowClear: false,
+                        width: '100%',
+                        dropdownAutoWidth: true,
+                        minimumResultsForSearch: 0 // Always show search box
+                    });
+                }
+            });
         }
 
         $(document).ready(function() {
@@ -218,17 +264,19 @@
                 renderer: 'bootstrap'
             });
 
-            // Initialize tooltips on page load
+            // Initialize tooltips, pagination and Select2 on page load
             initTooltips();
             fixPagination();
+            initSelect2();
 
-            // Re-initialize tooltips and fix pagination after every DataTable draw
+            // Re-initialize tooltips, pagination and Select2 after every DataTable draw
             table.on('draw.dt', function() {
                 initTooltips();
                 fixPagination();
+                initSelect2();
             });
 
-            // Enable save button when city is selected
+            // Enable save button when city is selected (using Select2 change event)
             $(document).on('change', '.city-select', function() {
                 const orderId = $(this).data('order-id');
                 const saveBtn = $(`.save-city-btn[data-order-id="${orderId}"]`);
@@ -284,16 +332,17 @@
 
                 td.html(`
                     <div class="d-flex align-items-center gap-2">
-                        <select class="form-select form-select-sm city-select"
-                                data-order-id="${orderId}"
-                                style="width: 120px;">
-                            <option value="">Select city</option>
-                            @foreach(array_unique(config('shareex_areas')) as $city)
-                                <option value="{{ $city }}" ${currentCity === '{{ $city }}' ? 'selected' : ''}>
-                                    {{ $city }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="city-select-wrapper">
+                            <select class="form-select form-select-sm city-select"
+                                    data-order-id="${orderId}">
+                                <option value="">Select city</option>
+                                @foreach(array_unique(config('shareex_areas')) as $city)
+                                    <option value="{{ $city }}" ${currentCity === '{{ $city }}' ? 'selected' : ''}>
+                                        {{ $city }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                         <button class="btn btn-sm btn-primary save-city-btn py-1 px-2"
                                 data-order-id="${orderId}">
                             <i class="bi bi-check-lg"></i>
@@ -305,7 +354,11 @@
                         </button>
                     </div>
                 `);
-                setTimeout(initTooltips, 100);
+                // Initialize Select2 on the newly created select
+                setTimeout(function() {
+                    initTooltips();
+                    initSelect2();
+                }, 50);
             });
 
             // Cancel change
