@@ -47,7 +47,7 @@ class ShippingCityMapperService
     /**
      * Main method to get Shareex city from shipping address
      */
-    public function getShareexCity(array $shippingAddress): ?string
+    public function getShareexCity(?array $shippingAddress): ?string
     {
         if (empty($shippingAddress)) {
             return null;
@@ -205,16 +205,16 @@ Response (Arabic city name only):";
                     'Authorization' => 'Bearer ' . $apiKey,
                     'Content-Type' => 'application/json',
                 ])->timeout(15)->post('https://api.openai.com/v1/chat/completions', [
-                    'model' => 'gpt-4o-mini', // More cost-effective than gpt-3.5-turbo
-                    'messages' => [
-                        [
-                            'role' => 'user',
-                            'content' => $prompt
-                        ]
-                    ],
-                    'max_tokens' => 50,
-                    'temperature' => 0.1,
-                ]);
+                            'model' => 'gpt-4o-mini', // More cost-effective than gpt-3.5-turbo
+                            'messages' => [
+                                [
+                                    'role' => 'user',
+                                    'content' => $prompt
+                                ]
+                            ],
+                            'max_tokens' => 50,
+                            'temperature' => 0.1,
+                        ]);
 
                 if ($response->successful()) {
                     $result = $response->json();

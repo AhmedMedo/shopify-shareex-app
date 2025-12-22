@@ -61,13 +61,27 @@ class FulfillmentsCreateJob implements ShouldQueue
         // 4. Prepare shipment data
 
         $cityMapper = new ShippingCityMapperService();
-        $shareexCity =  $cityMapper->getShareexCity($order->shipping_address);
+        $shippingAddress = $order->shipping_address;
+
+        // Check if shipping address exists
+        if (empty($shippingAddress)) {
+            $order->update([
+                'shipping_status' => \App\Enum\ShippingStatusEnum::AWAINTING_FOR_SHIPPING_CITY->value,
+            ]);
+            Log::error('Shipping address is empty or null:', [
+                'shop_id' => $order->shop_id,
+                'order_id' => $order->order_id,
+            ]);
+            return;
+        }
+
+        $shareexCity = $cityMapper->getShareexCity($shippingAddress);
         if (!$shareexCity) {
             $order->update([
                 'shipping_status' => \App\Enum\ShippingStatusEnum::AWAINTING_FOR_SHIPPING_CITY->value,
-//                'processed_at' => now(),
+                //                'processed_at' => now(),
             ]);
-            Log::error('Shareex city found:',[
+            Log::error('Shareex city found:', [
                 'shop_id' => $order->shop_id,
                 'shareex_city' => $shareexCity,
                 'shipping_address' => $order->shipping_address
@@ -84,7 +98,7 @@ class FulfillmentsCreateJob implements ShouldQueue
         try {
             $order = $order->refresh();
             $service = new ShippingService($order);
-            if($service->sendToShareex()) {
+            if ($service->sendToShareex()) {
 
                 $order->update([
                     'shipping_status' => \App\Enum\ShippingStatusEnum::SHIPPED->value
@@ -158,7 +172,8 @@ class FulfillmentsCreateJob implements ShouldQueue
     protected function prepareShipmentData(ShopifyOrder $order): ?array
     {
         $shippingAddress = $this->getShippingAddress($order);
-        if (!$shippingAddress) return null;
+        if (!$shippingAddress)
+            return null;
 
         $areaMapping = $this->getAreaMapping($order->shop_id, $shippingAddress);
         $shareexArea = $areaMapping ? $areaMapping->shareex_area_name : $shippingAddress['city'];
@@ -265,7 +280,7 @@ class FulfillmentsCreateJob implements ShouldQueue
             $logData["status"] = "success";
             $logData["shareex_serial_number"] = $serial;
 
-//            // Update order with tracking info if available
+            //            // Update order with tracking info if available
 //            if ($serial) {
 //                $this->updateOrderTracking($order, $serial);
 //            }
