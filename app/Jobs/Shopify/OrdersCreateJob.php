@@ -4,6 +4,8 @@ namespace App\Jobs\Shopify;
 
 use App\Models\ShopifyOrder;
 use App\Models\User;
+use App\Services\Shareex\ShippingService;
+use App\Services\ShippingCityMapperService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -47,7 +49,7 @@ class OrdersCreateJob implements ShouldQueue
             }
 
             // Create or update the order
-            ShopifyOrder::updateOrCreate(
+            $order = ShopifyOrder::updateOrCreate(
                 ['order_id' => $this->data->id],
                 [
                     'shop_id' => $shop->id,
@@ -76,11 +78,71 @@ class OrdersCreateJob implements ShouldQueue
                 'shop_id' => $shop->id
             ]);
 
+            if ($shop->is_active && $shop->ship_on_order_create) {
+                Log::info('OrdersCreateJob: ship_on_order_create enabled, shipping order to Shareex now', [
+                    'order_id' => $order->order_id,
+                    'shop_id' => $shop->id,
+                ]);
+                try {
+                    $this->autoShip($order);
+                } catch (\Exception $e) {
+                    Log::error('OrdersCreateJob: auto-ship failed', [
+                        'error' => $e->getMessage(),
+                        'order_id' => $order->order_id,
+                        'shop_id' => $shop->id,
+                    ]);
+                }
+            }
+
 
         } catch (\Exception $e) {
             Log::error('Failed to process order', [
                 'error' => $e->getMessage(),
                 'order_data' => (array)$this->data
+            ]);
+        }
+    }
+
+    protected function autoShip(ShopifyOrder $order): void
+    {
+        $order->update([
+            'shipping_status' => \App\Enum\ShippingStatusEnum::READY_TO_SHIP->value,
+            'processed_at' => now(),
+        ]);
+
+        $order->refresh();
+
+        $shippingAddress = $order->shipping_address;
+        if (empty($shippingAddress)) {
+            $order->update([
+                'shipping_status' => \App\Enum\ShippingStatusEnum::AWAINTING_FOR_SHIPPING_CITY->value,
+            ]);
+            Log::error('OrdersCreateJob: shipping address empty', [
+                'shop_id' => $order->shop_id,
+                'order_id' => $order->order_id,
+            ]);
+            return;
+        }
+
+        $shareexCity = (new ShippingCityMapperService())->getShareexCity($shippingAddress);
+        if (!$shareexCity) {
+            $order->update([
+                'shipping_status' => \App\Enum\ShippingStatusEnum::AWAINTING_FOR_SHIPPING_CITY->value,
+            ]);
+            Log::error('OrdersCreateJob: Shareex city not found', [
+                'shop_id' => $order->shop_id,
+                'shipping_address' => $shippingAddress,
+            ]);
+            return;
+        }
+
+        $order->update(['shareex_shipping_city' => $shareexCity]);
+        $order->refresh();
+
+        $service = new ShippingService($order);
+        if ($service->sendToShareex()) {
+            $order->update([
+                'shipping_status' => \App\Enum\ShippingStatusEnum::SHIPPED->value,
             ]);
         }
     }

@@ -27,6 +27,7 @@ class User extends Authenticatable implements IShopModel
         'shop_name',
         'shop_domain',
         'password',
+        'ship_on_order_create',
     ];
 
     /**
@@ -47,5 +48,6 @@ class User extends Authenticatable implements IShopModel
     protected $casts = [
         'email_verified_at' => 'datetime',
 //        'password' => 'hashed',
+        'ship_on_order_create' => 'boolean',
     ];
 }

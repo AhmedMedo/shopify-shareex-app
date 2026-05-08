@@ -41,7 +41,7 @@ class ShareexApiService
             $this->apiUrl = $credentials->base_url;
             $this->username = $credentials->api_username;
             $this->password = $credentials->api_password;
-//            try {
+            //            try {
 //                $this->password = Crypt::decryptString($credentials->api_password);
 //            } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
 //                Log::error("ShareexApiService: Failed to decrypt password for shop" . $this->shop->id, ["error" => $e->getMessage()]);
@@ -75,7 +75,7 @@ class ShareexApiService
             "upass" => $this->password,
         ]);
 
-        Log::debug('SENDING_REQUEST',[
+        Log::debug('SENDING_REQUEST', [
             "url" => $fullUrl,
             "data" => $requestData
         ]);
@@ -87,7 +87,7 @@ class ShareexApiService
                 $response = Http::get($fullUrl, $requestData);
             }
 
-             Log::debug("Shareex API Request Response", ["response" => $response->json(),'r' => $response->body()]);
+            Log::debug("Shareex API Request Response", ["response" => $response->json(), 'r' => $response->body()]);
 
             if ($response->failed()) {
                 Log::error("Shareex API Request Failed", [
@@ -120,11 +120,11 @@ class ShareexApiService
 
     public function getShipmentLastStatus(string $serialNumber): ?array
     {
-        return $this->makeRequest("GetShipmentLastStatus", ["serial" => $serialNumber], "GET");
+        return $this->makeRequest("GetShipmentLastStatus", ["id" => $serialNumber], "POST");
     }
 
     public function getShipmentHistory(string $serialNumber): ?array
     {
-        return $this->makeRequest("GetShipmentHistory", ["serial" => $serialNumber], "GET");
+        return $this->makeRequest("GetShipmentHistory", ["id" => $serialNumber], "POST");
     }
 }
