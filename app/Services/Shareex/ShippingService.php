@@ -48,7 +48,7 @@ class ShippingService
             "name" => $this->getCustomerName($order, $shippingAddress),
             "tel" => $this->getCustomerPhone($shippingAddress, $order),
             "address" => $this->getCustomerAddress($shippingAddress),
-            "remarks" => $order->note ?? "",
+            "remarks" => $this->buildRemarksFromLineItems(),
             "pieces" => $this->calculateTotalPieces(),
             "amount" => $order->total_price ?? '0.00',
         ];
@@ -116,6 +116,17 @@ class ShippingService
             $pieces += $item['quantity'];
         }
         return $pieces;
+    }
+
+    protected function buildRemarksFromLineItems(): string
+    {
+        $parts = [];
+        foreach ($this->order->line_items ?? [] as $item) {
+            $name = $item['name'] ?? $item['title'] ?? 'Product';
+            $qty  = $item['quantity'] ?? 1;
+            $parts[] = "{$name} x{$qty}";
+        }
+        return implode(', ', $parts);
     }
 
     protected function processSending(ShareexApiService $service, ShopifyOrder $order, array $payload): bool
