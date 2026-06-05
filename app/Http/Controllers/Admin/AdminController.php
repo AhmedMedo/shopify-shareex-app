@@ -34,6 +34,7 @@ class AdminController extends Controller
     public function index(Request $request)
     {
         $activeTab = $request->get('tab', 'pending');
+        $search = trim((string) $request->get('search', ''));
         $shopId = Auth::guard('admin')->user()->shop_id;
 
         $query = ShopifyOrder::with([
@@ -63,9 +64,26 @@ class AdminController extends Controller
                 $query->where('shipping_status', ShippingStatusEnum::PENDING->value);
         }
 
-        $orders = $query->orderBy('created_at', 'desc')->get();
+        // Server-side search across all matching orders
+        if ($search !== '') {
+            $like = "%{$search}%";
+            $query->where(function ($q) use ($like) {
+                $q->where('order_number', 'like', $like)
+                    ->orWhere('email', 'like', $like)
+                    ->orWhere('shipping_serial', 'like', $like)
+                    ->orWhere('shareex_shipping_city', 'like', $like)
+                    ->orWhere('shipping_address->first_name', 'like', $like)
+                    ->orWhere('shipping_address->last_name', 'like', $like)
+                    ->orWhere('shipping_address->phone', 'like', $like)
+                    ->orWhere('shipping_address->city', 'like', $like);
+            });
+        }
 
-        return view('admin.index', compact('orders', 'activeTab'));
+        $orders = $query->orderBy('created_at', 'desc')
+            ->paginate(25)
+            ->withQueryString();
+
+        return view('admin.index', compact('orders', 'activeTab', 'search'));
     }
 
     public function showOrder($orderId)

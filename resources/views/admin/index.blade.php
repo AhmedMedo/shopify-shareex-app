@@ -32,6 +32,17 @@
             </li>
         </ul>
 
+        <!-- Search -->
+        <form method="GET" action="{{ route('admin.home') }}" class="mb-3 d-flex gap-2">
+            <input type="hidden" name="tab" value="{{ $activeTab }}">
+            <input type="text" name="search" value="{{ $search }}" class="form-control"
+                   placeholder="Search order #, email, name, phone, city...">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
+            @if($search !== '')
+                <a href="{{ route('admin.home', ['tab' => $activeTab]) }}" class="btn btn-outline-secondary">Clear</a>
+            @endif
+        </form>
+
         <div class="card">
             <div class="card-body">
                 <div class="table-responsive">
@@ -50,7 +61,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        @foreach($orders as $order)
+                        @forelse($orders as $order)
                             @php
                                 $shippingAddress = $order->shipping_address;
                                 $latestLog = $order->logs->last();
@@ -138,9 +149,17 @@
                                     </div>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">No orders found.</td>
+                            </tr>
+                        @endforelse
                         </tbody>
                     </table>
+                </div>
+
+                <div class="mt-3">
+                    {{ $orders->links() }}
                 </div>
             </div>
         </div>
@@ -227,11 +246,14 @@
         }
 
         $(document).ready(function() {
-            // Initialize DataTable
+            // Pagination and search are handled server-side (Laravel paginate + search box).
+            // DataTables is kept only for responsive layout + per-page column sorting.
             var table = $('#ordersTable').DataTable({
                 responsive: true,
-                pageLength: 25,
-                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                paging: false,
+                searching: false,
+                info: false,
+                lengthChange: false,
                 order: [[0, 'desc']], // Sort by Order ID descending
                 columnDefs: [
                     {
@@ -244,24 +266,7 @@
                         orderable: false
                     }
                 ],
-                language: {
-                    search: "Search orders:",
-                    lengthMenu: "Show _MENU_ orders per page",
-                    info: "Showing _START_ to _END_ of _TOTAL_ orders",
-                    infoEmpty: "Showing 0 to 0 of 0 orders",
-                    infoFiltered: "(filtered from _MAX_ total orders)",
-                    paginate: {
-                        first: "First",
-                        last: "Last",
-                        next: "Next",
-                        previous: "Previous"
-                    }
-                },
-                dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
-                     '<"row"<"col-sm-12"tr>>' +
-                     '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
-                pagingType: 'full_numbers',
-                renderer: 'bootstrap'
+                dom: 't' // render the table only — no DataTables length/filter/info/pager
             });
 
             // Initialize tooltips, pagination and Select2 on page load
